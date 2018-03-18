@@ -1,13 +1,5 @@
 #-*- coding: utf-8 -*-
 
-'''
-Created  : 2018. 03. 08
-Updated : 2018. 03. 09
-Edited : 
-what: linux file utility       
-@location: SNU MILab
-@author: dato
-'''
 
 import os
 import chardet

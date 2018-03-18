@@ -1,14 +1,5 @@
 #-*- coding: utf-8 -*-
 
-'''
-Created  : 2018. 03. 15
-Updated : 2018. 03. 15
-Edited : 
-what: linux file utility       
-@location: SNU MILab
-@author: dato
-'''
-
 
 '''
 dic           : original dictionary
