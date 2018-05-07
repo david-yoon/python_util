@@ -8,31 +8,49 @@ import operator
 
 class Vocab:
     
-    def __init__(self, dic):
-        
+    
+    def __init__(self, dic):        
         self.dic = dic
         self.index = []
         self._create_index()
-    
-    def _create_index(self):
         
+        
+    def _create_index(self):
         sorted_voca = sorted(self.dic.items(), key=operator.itemgetter(1))
         for word, num in sorted_voca:
             self.index.append( word )
+            
             
     def find_index(self, word):
         if self.dic.has_key(word):
             return self.dic[word]
         else:
             return self.dic['_UNK_']  
-            
+
+        
+    """
+    input: list( index )
+    output: str (sentnece)
+    """
     def index2sent(self, index):
-        return ' '.join( [ self.index[int(x)] for x in index ] )
+        
+        if len(index) == 1:
+            return self.index[index[0]]
+        else:
+            return ' '.join( [ self.index[int(x)] for x in index ] )      
     
     
+    """
+    input: list ( word )
+    output: list ( index )
+    """
     def word2index(self, word):
-        return " ".join( [ str(self.find_index(x)) for x in word ] )
-    
+        
+        if len(word) > 1:
+            return [ int(self.find_index(x)) for x in word ]
+        else :
+            return [ int(self.find_index(word[0])) ]
+        
 
     # 문장을 넣으면 list 로 index 를 return
     def __call__(self, line):        
@@ -54,14 +72,10 @@ class Vocab:
             
         return indices
         """
-        
     
     @property
     def size(self):
-        return len(self.index2word)
+        return len(self.dic)
     
     def __len__(self):
-        return len(self.index2word)  
-    
-    
-
+        return len(self.dic)  
