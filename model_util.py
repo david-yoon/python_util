@@ -2,6 +2,7 @@
 
 import tensorflow as tf
 
+    
 '''
 desc : apply luong attention to target vector with given condition
 
@@ -14,6 +15,7 @@ input :
 
 output : 
    - attented target : weighted sum [batch, embed]
+   - norm_dot : attention weight
 '''
 def luong_attention( batch_size, target, condition, target_encoder_length, hidden_dim ) :
 
@@ -25,13 +27,19 @@ def luong_attention( batch_size, target, condition, target_encoder_length, hidde
     
     # calculate similarity 
     dot = tf.matmul( batch_seq_embed_target,  batch_seq_embed_given )
-    norm_dot = tf.nn.softmax( dot, dim=1 )
     
+    pad_position = tf.equal(tf.reshape(dot, [batch_size, target_encoder_length]), 0.0)
+    tmp = tf.to_float(pad_position) * -1e9
+    tmp = tf.expand_dims(tmp, 2)
+    base = tf.ones( [batch_size, target_encoder_length, 1] ) * tmp
+    
+    norm_dot = tf.nn.softmax( dot+base, dim=1 )
+   
     # weighted sum by using similarity (normalized)
     target_mul_norm = tf.multiply( batch_seq_embed_target, norm_dot )
     weighted_sum = tf.reduce_sum( target_mul_norm, axis=1 )
 
-    return weighted_sum
+    return weighted_sum, dot, norm_dot
 
 
 '''
@@ -100,3 +108,5 @@ def sy_ltc( batch_size, topic_size, memory_dim, hidden_dim, input_encoder, dr_me
         #self.final_encoderR_dimension = hidden_dim + memory_dim   # encoder 에서 구한 latent topic 값을 같이 사용
                 
         return final_encoder, final_encoder_dimension
+    
+    
