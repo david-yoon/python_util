@@ -6,21 +6,21 @@ import tensorflow as tf
 desc : latent topic cluster method
 
 input :
-   - batch_size          : 
-   - topic                  : # of topics
-   - memory_dim       : dim of each topic
-   - hidden_dim         : dim of input vector
-   - input_encoder     : [batch, dim_encoder]
-   - dr_memory_prob  : dropout ratio for memory
+   - batch_size        : 
+   - topic             :    : # of topics
+   - memory_dim        : dim of each topic
+   - input_hidden_dim  : dim of input vector
+   - input_encoder     : [batch, input_hidden_dim]
+   - dr_memory_prob    : dropout ratio for memory
 
 output : 
    - final_encoder : LTC applied vector [batch, vector(== concat(original, topic_mem)]
    - final_encoder_dimension : 
 '''
-def sy_ltc( batch_size, topic_size, memory_dim, hidden_dim, input_encoder, dr_memory_prob=1.0 ):
-    print '[launch] s.y. latent topic cluster method'
+def sy_ltc( batch_size, topic_size, memory_dim, input_hidden_dim, input_encoder, dr_memory_prob=1.0 ):
+    print '[launch : model_sy_ltc] s.y. Latent Topic Cluster method'
 
-    with tf.name_scope('memory_network_v1') as scope:
+    with tf.name_scope('sy_ltc') as scope:
 
         # memory space for latent topic
         memory = tf.get_variable( "latent_topic_memory", 
@@ -28,7 +28,7 @@ def sy_ltc( batch_size, topic_size, memory_dim, hidden_dim, input_encoder, dr_me
                                       initializer=tf.orthogonal_initializer()
                                      )
 
-        memory_W = tf.Variable(tf.random_uniform( [hidden_dim, memory_dim],
+        memory_W = tf.Variable(tf.random_uniform( [input_hidden_dim, memory_dim],
                                                       minval= -0.25,
                                                       maxval= 0.25,
                                                       dtype=tf.float32,
@@ -62,7 +62,7 @@ def sy_ltc( batch_size, topic_size, memory_dim, hidden_dim, input_encoder, dr_me
         # final context 
         final_encoder  = tf.concat( [input_encoder, rsum], axis=-1 )
 
-        final_encoder_dimension  = hidden_dim + memory_dim   # concat 으로 늘어났음
+        final_encoder_dimension  = input_hidden_dim + memory_dim   # concat 으로 늘어났음
                 
         return final_encoder, final_encoder_dimension
     
