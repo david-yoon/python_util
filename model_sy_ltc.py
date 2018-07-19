@@ -44,11 +44,10 @@ def sy_ltc( batch_size, topic_size, memory_dim, input_hidden_dim, input_encoder,
         topic_sim = tf.matmul( topic_sim_project, memory, transpose_b=True )
         
         # add non-linearity
-        topic_sim_sigmoid = tf.tanh( topic_sim )
+        topic_sim = tf.tanh( topic_sim )
 
         # normalize
         topic_sim_sigmoid_softmax = tf.nn.softmax( logits=topic_sim, dim=-1)
-        #self.topic_sim_sigmoid_softmax = tf.nn.softmax( logits=topic_sim_sigmoid, dim=-1)
 
         # memory_context 를 계산  memory 를 topic_sim_norm 으로 weighted sum 수행
         # batch_size = 1 인 경우를 위해서 shape 을 맞추어줌
