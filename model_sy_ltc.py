@@ -36,7 +36,7 @@ def sy_ltc( batch_size, topic_size, memory_dim, input_hidden_dim, input_encoder,
                                     name="memory_projection_W")
 
         memory_W = tf.nn.dropout( memory_W, keep_prob=dr_memory_prob )
-        memory_bias = tf.Variable(tf.zeros([1], dtype=tf.float32), name="memory_projection_bias")
+        memory_bias = tf.Variable(tf.zeros([memory_dim], dtype=tf.float32), name="memory_projection_bias")
 
         topic_sim_project = tf.matmul( input_encoder, memory_W ) + memory_bias
 
