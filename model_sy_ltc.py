@@ -42,7 +42,9 @@ def sy_ltc( batch_size, topic_size, memory_dim, input_hidden_dim, input_encoder,
 
         # context 와 topic 의 similairty 계산
         topic_sim = tf.matmul( topic_sim_project, memory, transpose_b=True )
-        #topic_sim_sigmoid = tf.sigmoid( topic_sim )
+        
+        # add non-linearity
+        topic_sim_sigmoid = tf.tanh( topic_sim )
 
         # normalize
         topic_sim_sigmoid_softmax = tf.nn.softmax( logits=topic_sim, dim=-1)
