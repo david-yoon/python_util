@@ -83,7 +83,7 @@ def gru_drop_out_cell(dr_prob=1.0, units=0):
                                         )
 
     
-def bidirectional_GRU(inputs, inputs_len, cell = None, units = 0, layers = 1, scope = "Bidirectional_GRU", output = 0, is_training = True, reuse = None, batch_size=0, dr_prob=1.0):
+def bidirectional_GRU(inputs, inputs_len, cell = None, cell_fn = tf.contrib.rnn.GRUCell, units = 0, layers = 1, scope = "Bidirectional_GRU", output = 0, is_training = True, reuse = None, batch_size=0, dr_prob=1.0):
     '''
     Bidirectional recurrent neural network with GRU cells.
 
@@ -96,31 +96,49 @@ def bidirectional_GRU(inputs, inputs_len, cell = None, units = 0, layers = 1, sc
                     forward rnn.
     '''
     with tf.variable_scope(scope, reuse = reuse):
-        
-        cells_en_fw = tf.contrib.rnn.MultiRNNCell( [ gru_drop_out_cell(dr_prob, units) for _ in range(layers) ] )
-        cells_en_bw = tf.contrib.rnn.MultiRNNCell( [ gru_drop_out_cell(dr_prob, units) for _ in range(layers) ] )
+        if cell is not None:
+            (cell_fw, cell_bw) = cell
+        else:
+            shapes = inputs.get_shape().as_list()
+            if len(shapes) > 3:
+                inputs = tf.reshape(inputs,(shapes[0]*shapes[1],shapes[2],-1))
+                inputs_len = tf.reshape(inputs_len,(shapes[0]*shapes[1],))
 
-        outputs, states = tf.nn.bidirectional_dynamic_rnn(cell_fw = cells_en_fw,
-                                                          cell_bw= cells_en_bw,
-                                                          inputs = inputs,
-                                                          sequence_length = inputs_len,
-                                                          dtype = tf.float32
-                                                          #time_major=False
-                                                         )
-        if Params.reverse_bw :
-            # forward / backward output
-            fw = outputs[0]
-            bw = tf.reverse_sequence(outputs[1],
-                                     seq_lengths = inputs_len,
-                                     seq_axis = 1
-                                    )
-            outputs = (fw, bw)
+            # if no cells are provided, use standard GRU cell implementation
+            if layers > 1:
+                cell_fw = MultiRNNCell([apply_dropout(cell_fn(units), size = inputs.shape[-1] if i == 0 else units, is_training = is_training, dropout=dr_prob) for i in range(layers)])
+                cell_bw = MultiRNNCell([apply_dropout(cell_fn(units), size = inputs.shape[-1] if i == 0 else units, is_training = is_training, dropout=dr_prob) for i in range(layers)])
+            else:
+                cell_fw, cell_bw = [apply_dropout(cell_fn(units), size = inputs.shape[-1], is_training = is_training) for _ in range(2)]
+                
+                
+        outputs, states = tf.nn.bidirectional_dynamic_rnn(
+                                                            cell_fw = cell_fw,
+                                                            cell_bw = cell_bw,
+                                                            inputs = inputs,
+                                                            sequence_length = inputs_len,
+                                                            dtype = tf.float32,
+                                                            scope = scope,
+                                                            time_major=False
+                                                            )
         
         if output == 0:
+            
+            if Params.reverse_bw :
+                # forward / backward output
+                fw = outputs[0]
+                bw = tf.reverse_sequence(outputs[1],
+                                         seq_lengths = inputs_len,
+                                         seq_axis = 1
+                                        )
+                outputs = (fw, bw)
+            
             return tf.concat(outputs, 2), states
         
         elif output == 1:
-            return _, tf.reshape(tf.concat(states,1),(batch_size, shapes[1], 2*units))
+            print "SPECIAL CASE!!!! WARNING"
+            return tf.reshape(tf.concat(states,1),(Params.batch_size, shapes[1], 2*units)), outputs
+    
 
 """
 def pointer_net(passage, passage_len, question, question_len, cell, params, scope = "pointer_network"):
@@ -153,7 +171,6 @@ def pointer_net(passage, passage_len, question, question_len, cell, params, scop
 """
 
 def attention_rnn(inputs, inputs_len, units, attn_cell, bidirection = True, scope = "gated_attention_rnn", is_training = True, batch_size = 0, dr_prob=1.0):
-    print "attention_rnn"
     with tf.variable_scope(scope):
         if bidirection:
             outputs, last_states = bidirectional_GRU(
@@ -186,7 +203,6 @@ def question_pooling(memory, units, weights, memory_len = None, scope = "questio
         return tf.reduce_sum(attn * memory, 1)
 """
 def gated_attention(memory, inputs, states, units, params, self_matching = False, memory_len = None, scope="gated_attention", batch_size=0):
-    print "GOGOGOGOGGO ENTERRRRR \n", weights
     with tf.variable_scope(scope):
         weights, W_g = params        
         inputs_ = [memory, inputs]
