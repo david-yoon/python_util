@@ -18,7 +18,7 @@ from tensorflow.python.ops import nn_ops
 from tensorflow.python.ops import variable_scope as vs
 from tensorflow.python.util import nest
 from tensorflow.contrib.rnn import RNNCell
-from Rnet_layers import gated_attention
+from model_layers import gated_attention
 from params import Params
 
 _BIAS_VARIABLE_NAME = "bias"
