@@ -58,43 +58,30 @@ output :
    - attented target : weighted sum [batch, embed]
    - norm_dot : attention weight
 '''
-def luong_attention_mul_condition( batch_size, target, condition, target_dim, condition_dim, max_target_encoder_length, attn_dim) :
+def luong_attention_mul_condition( batch_size, target, condition, target_dim, condition_dim, max_target_encoder_length) :
 
     weighted_sum = 0
     norm_dot = 0
   
-    W_target = tf.Variable(tf.random_uniform([target_dim, attn_dim],
+    W_matrix = tf.Variable(tf.random_uniform([target_dim, condition_dim],
                                                   minval= -0.25,
                                                   maxval= 0.25,
                                                   dtype=tf.float32,
                                                   seed=None),
-                           trainable=True,
-                           name="attn_W_target")
-    
-    
-    W_condition = tf.Variable(tf.random_uniform([condition_dim,attn_dim],
-                                                  minval= -0.25,
-                                                  maxval= 0.25,
-                                                  dtype=tf.float32,
-                                                  seed=None),
-                                                     trainable=True,
-                                                     name="attn_W_condition")
+                                               trainable=True,
+                                               name="attn_W_target")
     
     attn_bias = tf.Variable(tf.zeros([1], dtype=tf.float32),
                                                  trainable=True,
                                                  name="attn_bias")
     
-    W_target = tf.reshape( W_target, [1, target_dim, attn_dim])
-    W_target = tf.tile( W_target, [batch_size, 1, 1])
     
-   
-    W_condition = tf.reshape( W_condition, [1, target_dim, attn_dim])
-    W_condition = tf.tile( W_condition, [batch_size, 1, 1])
+    W_matrix = tf.reshape( W_matrix, [1, target_dim, condition_dim])
+    W_matrix = tf.tile( W_matrix, [batch_size, 1, 1])
     
-    tmp_target = tf.matmul( target, W_target )
-    tmp_condition = tf.matmul( condition, W_condition )
+    tmp_target = tf.matmul( target, W_matrix )
     
-    dot = tf.multiply(tmp_target, tmp_condition)
+    dot = tf.multiply(tmp_target, condition)
     dot = tf.reduce_sum(dot, axis=2) + attn_bias
     
     # pad 부분을 작은 값으로 대체 --> 그래야 softmax 후 0으로 떨어짐
@@ -108,4 +95,4 @@ def luong_attention_mul_condition( batch_size, target, condition, target_dim, co
     target_mul_norm = tf.multiply( target, norm_dot )
     weighted_sum = tf.reduce_sum( target_mul_norm, axis=1 )
 
-    return weighted_sum, norm_dot
+    return weighted_sum, norm_dot, W_matrix, tmp_target, dot

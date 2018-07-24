@@ -194,12 +194,13 @@ def attention_rnn(inputs, inputs_len, units, attn_cell, bidirection = True, scop
                                         output = 0,
                                         is_training = True,
                                         dr_prob = dr_prob,
-                                        is_bidir = is_bidir
+                                        is_bidir = True
                                        )
         else:
             outputs, last_states = tf.nn.dynamic_rnn(attn_cell, inputs,
                                             sequence_length = inputs_len,
                                             dtype=tf.float32)
+            
         return outputs, last_states
 
 """    
