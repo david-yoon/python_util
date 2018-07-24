@@ -95,7 +95,7 @@ def bidirectional_GRU(inputs, inputs_len, cell = None, cell_fn = tf.contrib.rnn.
                     if 1, output returns concatenated state of backward and
                     forward rnn.
     '''
-    with tf.variable_scope(scope, reuse = reuse):
+    with tf.variable_scope(scope, reuse = reuse, initializer=tf.orthogonal_initializer()):
         if cell is not None:
             (cell_fw, cell_bw) = cell
         else:
