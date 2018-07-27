@@ -52,19 +52,18 @@ def encoding(word, char, word_embeddings, char_embeddings, scope = "embedding"):
         return word_encoding, char_encoding
 """
 
-def apply_dropout(inputs, size = None, is_training = True, dropout=None):
+def apply_dropout(inputs, size = None, is_training = True, input_keep_prob=1.0, output_keep_prob=1.0):
     '''
     Implementation of Zoneout from https://arxiv.org/pdf/1606.01305.pdf
     '''
-    #if dropout is None and Params.zoneout is None:
-    if dropout is None:
+    if ( (input_keep_prob==1.0) & (output_keep_prob==1.0) ):
         return inputs
     #if Params.zoneout is not None:
     #    return ZoneoutWrapper(inputs, state_zoneout_prob= Params.zoneout, is_training = is_training)
     elif is_training:
         return tf.contrib.rnn.DropoutWrapper(inputs,
-                                             input_keep_prob = dropout,
-                                             output_keep_prob = dropout,
+                                             input_keep_prob  = input_keep_prob,
+                                             output_keep_prob = output_keep_prob,
                                              # variational_recurrent = True,
                                              # input_size = size,
                                              dtype = tf.float32)
@@ -87,7 +86,7 @@ def gru_drop_out_cell(dr_prob=1.0, units=0):
 """
 
     
-def bidirectional_GRU(inputs, inputs_len, cell = None, cell_fn = tf.contrib.rnn.GRUCell, units = 0, layers = 1, scope = "Bidirectional_GRU", output = 0, is_training = True, reuse = None, dr_prob=1.0, is_bidir=False):
+def bidirectional_GRU(inputs, inputs_len, cell = None, cell_fn = tf.contrib.rnn.GRUCell, units = 0, layers = 1, scope = "Bidirectional_GRU", output = 0, is_training = True, reuse = None, dr_input_keep_prob=1.0, dr_output_keep_prob=1.0, is_bidir=False):
     '''
     Bidirectional recurrent neural network with GRU cells.
 
@@ -109,9 +108,9 @@ def bidirectional_GRU(inputs, inputs_len, cell = None, cell_fn = tf.contrib.rnn.
 
             # if no cells are provided, use standard GRU cell implementation
             if layers > 1:
-                cell_fw = MultiRNNCell([apply_dropout(cell_fn(units), size = inputs.shape[-1] if i == 0 else units, is_training = is_training, dropout=dr_prob) for i in range(layers)])
+                cell_fw = MultiRNNCell([apply_dropout(cell_fn(units), size = inputs.shape[-1] if i == 0 else units, is_training = is_training, input_keep_prob=dr_input_keep_prob, output_keep_prob=dr_output_keep_prob) for i in range(layers)])
                 if is_bidir: 
-                    cell_bw = MultiRNNCell([apply_dropout(cell_fn(units), size = inputs.shape[-1] if i == 0 else units, is_training = is_training, dropout=dr_prob) for i in range(layers)])
+                    cell_bw = MultiRNNCell([apply_dropout(cell_fn(units), size = inputs.shape[-1] if i == 0 else units, is_training = is_training, input_keep_prob=dr_input_keep_prob, output_keep_prob=dr_output_keep_prob) for i in range(layers)])
             else:
                 cell_fw = apply_dropout(cell_fn(units), size = inputs.shape[-1], is_training = is_training)
                 if is_bidir: 
