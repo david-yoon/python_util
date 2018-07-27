@@ -63,13 +63,16 @@ def apply_dropout(inputs, size = None, is_training = True, dropout=None):
     #    return ZoneoutWrapper(inputs, state_zoneout_prob= Params.zoneout, is_training = is_training)
     elif is_training:
         return tf.contrib.rnn.DropoutWrapper(inputs,
-                                            output_keep_prob = dropout,
-                                            # variational_recurrent = True,
-                                            # input_size = size,
-                                            dtype = tf.float32)
+                                             input_keep_prob = dropout,
+                                             output_keep_prob = dropout,
+                                             # variational_recurrent = True,
+                                             # input_size = size,
+                                             dtype = tf.float32)
     else:
         return inputs
 
+    
+"""
 # cell instance
 def gru_cell(units):
     return tf.contrib.rnn.GRUCell(num_units=units)
@@ -81,6 +84,7 @@ def gru_drop_out_cell(dr_prob=1.0, units=0):
                                          output_keep_prob=1.0,
                                          dtype = tf.float32
                                         )
+"""
 
     
 def bidirectional_GRU(inputs, inputs_len, cell = None, cell_fn = tf.contrib.rnn.GRUCell, units = 0, layers = 1, scope = "Bidirectional_GRU", output = 0, is_training = True, reuse = None, dr_prob=1.0, is_bidir=False):
@@ -99,6 +103,7 @@ def bidirectional_GRU(inputs, inputs_len, cell = None, cell_fn = tf.contrib.rnn.
         else:
             shapes = inputs.get_shape().as_list()
             if len(shapes) > 3:
+                print 'input reshaped!!!'
                 inputs = tf.reshape(inputs,(shapes[0]*shapes[1],shapes[2],-1))
                 inputs_len = tf.reshape(inputs_len,(shapes[0]*shapes[1],))
 
