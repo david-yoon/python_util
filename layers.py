@@ -14,11 +14,11 @@ def gru_cell(hidden_dim):
     return tf.contrib.rnn.GRUCell(num_units=hidden_dim)
     
 # cell instance with drop-out wrapper applied
-def drop_out_cell(hidden_dim=100, dr_in=1.0, dr_out=1.0, is_training = True):
+def drop_out_cell(hidden_dim=None, dr_in=1.0, dr_out=1.0):
     return tf.contrib.rnn.DropoutWrapper(gru_cell(hidden_dim), input_keep_prob=dr_in, output_keep_prob=dr_out)
 
    
-def add_GRU(inputs, inputs_len, cell = None, cell_fn = tf.contrib.rnn.GRUCell, hidden_dim=100, layers = 1, scope = "add_GRU", output = 0, is_training = True, reuse = None, dr_input_keep_prob=1.0, dr_output_keep_prob=1.0, is_bidir=False, is_bw_reversed=True):
+def add_GRU(inputs, inputs_len, cell = None, cell_fn = tf.contrib.rnn.GRUCell, hidden_dim=100, layers = 1, scope = "add_GRU", output = 0, is_training = True, reuse = None, dr_input_keep_prob=1.0, dr_output_keep_prob=1.0, is_bidir=False, is_bw_reversed=False):
     '''
     Bidirectional recurrent neural network with GRU cells.
 
@@ -28,7 +28,7 @@ def add_GRU(inputs, inputs_len, cell = None, cell_fn = tf.contrib.rnn.GRUCell, h
         cell:       rnn cell of type RNN_Cell.
         output:     [ batch, step, dim (fw;bw) ], [ batch, dim (fw;bw) ]
     '''
-    with tf.variable_scope(scope, reuse=reuse, initializer=tf.orthogonal_initializer()):
+    with tf.variable_scope(name_or_scope=scope, reuse=reuse, initializer=tf.orthogonal_initializer()):
         
         if cell is not None:
             (cell_fw, cell_bw) = cell
@@ -39,7 +39,7 @@ def add_GRU(inputs, inputs_len, cell = None, cell_fn = tf.contrib.rnn.GRUCell, h
                     hidden_dim=hidden_dim,
                     dr_in=dr_input_keep_prob,
                     dr_out=dr_output_keep_prob,
-                    is_training = is_training) for _ in range(layers)
+                    ) for _ in range(layers)
                 ]
             )
                 
@@ -49,12 +49,12 @@ def add_GRU(inputs, inputs_len, cell = None, cell_fn = tf.contrib.rnn.GRUCell, h
                             hidden_dim=hidden_dim,
                             dr_in=dr_input_keep_prob,
                             dr_out=dr_output_keep_prob,
-                            is_training = is_training) for _ in range(layers)
+                            ) for _ in range(layers)
                         ]
                     )
 
         if is_bidir :
-            # output : [
+            # output : [ (fw,bw), batch, step, dim ]
             # status : [ (fw,bw), layer, seq, embed_dim ]
             outputs, states = tf.nn.bidirectional_dynamic_rnn(
                                                             cell_fw = cell_fw,
