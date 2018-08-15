@@ -6,7 +6,7 @@ import numpy as np
 
 from tensorflow.contrib.rnn import MultiRNNCell
 from tensorflow.contrib.rnn import GRUCell
-from tensorflow.contrib.rnn import DropoutWrapper
+from tensorflow.contrib.rnn import DropoutWrapper, ResidualWrapper
 
 
 # cell instance
@@ -14,11 +14,14 @@ def gru_cell(hidden_dim):
     return tf.contrib.rnn.GRUCell(num_units=hidden_dim)
     
 # cell instance with drop-out wrapper applied
-def drop_out_cell(hidden_dim=None, dr_in=1.0, dr_out=1.0):
-    return tf.contrib.rnn.DropoutWrapper(gru_cell(hidden_dim), input_keep_prob=dr_in, output_keep_prob=dr_out)
-
+def drop_out_cell(hidden_dim=None, dr_in=1.0, dr_out=1.0, is_residual=False):
+    if is_residual:
+        return tf.contrib.rnn.ResidualWrapper( tf.contrib.rnn.DropoutWrapper(gru_cell(hidden_dim), input_keep_prob=dr_in, output_keep_prob=dr_out) )
+    else: 
+        return tf.contrib.rnn.DropoutWrapper(gru_cell(hidden_dim), input_keep_prob=dr_in, output_keep_prob=dr_out)
+    
    
-def add_GRU(inputs, inputs_len, cell = None, cell_fn = tf.contrib.rnn.GRUCell, hidden_dim=100, layers = 1, scope = "add_GRU", output = 0, is_training = True, reuse = None, dr_input_keep_prob=1.0, dr_output_keep_prob=1.0, is_bidir=False, is_bw_reversed=False):
+def add_GRU(inputs, inputs_len, cell = None, cell_fn = tf.contrib.rnn.GRUCell, hidden_dim=100, layers = 1, scope = "add_GRU", output = 0, is_training = True, reuse = None, dr_input_keep_prob=1.0, dr_output_keep_prob=1.0, is_bidir=False, is_bw_reversed=False, is_residual=False):
     '''
     Bidirectional recurrent neural network with GRU cells.
 
@@ -39,9 +42,12 @@ def add_GRU(inputs, inputs_len, cell = None, cell_fn = tf.contrib.rnn.GRUCell, h
                     hidden_dim=hidden_dim,
                     dr_in=dr_input_keep_prob,
                     dr_out=dr_output_keep_prob,
-                    ) for _ in range(layers)
+                    is_residual=is_residual
+                    ) for i in range(layers)
                 ]
             )
+                
+                
                 
             if is_bidir :
                     cell_bw = MultiRNNCell(
@@ -49,7 +55,8 @@ def add_GRU(inputs, inputs_len, cell = None, cell_fn = tf.contrib.rnn.GRUCell, h
                             hidden_dim=hidden_dim,
                             dr_in=dr_input_keep_prob,
                             dr_out=dr_output_keep_prob,
-                            ) for _ in range(layers)
+                            is_residual=is_residual
+                            ) for i in range(layers)
                         ]
                     )
 
