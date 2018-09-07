@@ -51,15 +51,16 @@ def add_GRU(inputs, inputs_len, cell = None, cell_fn = tf.contrib.rnn.GRUCell, h
                 
                 
             if is_bidir :
-                    cell_bw = MultiRNNCell(
-                        [ drop_out_cell( 
-                            hidden_dim=hidden_dim,
-                            dr_in=dr_input_keep_prob,
-                            dr_out=dr_output_keep_prob,
-                            is_residual=is_residual
-                            ) for i in range(layers)
-                        ]
-                    )
+                print "[layers] bidir case"
+                cell_bw = MultiRNNCell(
+                    [ drop_out_cell( 
+                        hidden_dim=hidden_dim,
+                        dr_in=dr_input_keep_prob,
+                        dr_out=dr_output_keep_prob,
+                        is_residual=is_residual
+                    ) for i in range(layers)
+                    ]
+                )
 
         if is_bidir :
             # output : [ (fw,bw), batch, step, dim ]
