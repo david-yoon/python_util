@@ -20,6 +20,7 @@ output :
 def sy_ltc( batch_size, topic_size, memory_dim, input_hidden_dim, input_encoder, dr_memory_prob=1.0 ):
     print '[launch : model_sy_ltc] s.y. Latent Topic Cluster method'
 
+
     with tf.name_scope('sy_ltc') as scope:
 
         # memory space for latent topic
@@ -30,7 +31,6 @@ def sy_ltc( batch_size, topic_size, memory_dim, input_hidden_dim, input_encoder,
 
         memory_W = tf.Variable(tf.random_uniform( [input_hidden_dim, memory_dim],
                                                       minval= -0.25,
-                                                      maxval= 0.25,
                                                       dtype=tf.float32,
                                                       seed=None),
                                     name="memory_projection_W")
@@ -42,7 +42,7 @@ def sy_ltc( batch_size, topic_size, memory_dim, input_hidden_dim, input_encoder,
 
         # context 와 topic 의 similairty 계산
         topic_sim = tf.matmul( topic_sim_project, memory, transpose_b=True )
-        
+
         # add non-linearity
         topic_sim = tf.tanh( topic_sim )
 
@@ -64,7 +64,6 @@ def sy_ltc( batch_size, topic_size, memory_dim, input_hidden_dim, input_encoder,
         final_encoder  = tf.concat( [input_encoder, rsum], axis=-1 )
 
         final_encoder_dimension  = input_hidden_dim + memory_dim   # concat 으로 늘어났음
-                
+
         return final_encoder, final_encoder_dimension
-    
-    
+        
