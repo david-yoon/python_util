@@ -16,7 +16,7 @@ def gru_cell(hidden_dim):
 # cell instance with drop-out wrapper applied
 def drop_out_cell(hidden_dim=None, dr_in=1.0, dr_out=1.0, is_residual=False):
     if is_residual:
-        print 'residual connection'
+        print ('residual connection')
         return tf.contrib.rnn.ResidualWrapper( tf.contrib.rnn.DropoutWrapper(gru_cell(hidden_dim), input_keep_prob=dr_in, output_keep_prob=dr_out) )
     else: 
         return tf.contrib.rnn.DropoutWrapper(gru_cell(hidden_dim), input_keep_prob=dr_in, output_keep_prob=dr_out)
@@ -51,7 +51,7 @@ def add_GRU(inputs, inputs_len, cell = None, cell_fn = tf.contrib.rnn.GRUCell, h
                 
                 
             if is_bidir :
-                print "[layers] bidir case"
+                print ("[layers] bidir case")
                 cell_bw = MultiRNNCell(
                     [ drop_out_cell( 
                         hidden_dim=hidden_dim,
