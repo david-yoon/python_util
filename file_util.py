@@ -2,7 +2,6 @@
 
 
 import os
-import chardet
 
 '''
 dirname        : path that need to be searched
@@ -29,15 +28,6 @@ def file_search(dirname, ret, list_avoid_dir=[]):
             ret.append( full_filename )          
 
             
-
-'''
-filename : filename (inc. path) that will be inspected
-'''
-def find_encoding(filename):
-    rawdata = open(filename, 'rb').read()
-    result = chardet.detect(rawdata)
-    charenc = result['encoding']    
-    return charenc
             
 '''
 dir_name : dir_name (inc. path) that will be created ( full-path name )
