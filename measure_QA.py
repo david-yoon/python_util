@@ -62,9 +62,13 @@ def MAP(y_true, y_score):
     
     '''
     with open('./TEST_log_map_results.txt', 'a') as f:
+
         # label index
         str_extracted = [str(x) for x in extracted]
         f.write( ' '.join(str_extracted) )
+
+        # map
+        f.write('\t[MAP: ' + str(map) + ']')
         f.write('\n')
 
         # prediction (rank)
