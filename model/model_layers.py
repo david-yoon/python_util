@@ -197,7 +197,7 @@ def attention_rnn(inputs, inputs_len, units, attn_cell, bidirection = True, scop
                                         reuse = False,
                                         output = 0,
                                         is_training = True,
-                                        dr_prob = dr_prob,
+                                        dr_input_keep_prob = dr_prob,
                                         is_bidir = True
                                        )
         else:
