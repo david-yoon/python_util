@@ -10,7 +10,8 @@ input :
    - batch_size             : 
    - target                 : [batch, seq, embed]
    - condition              : [batch, embed] --> last hidden
-   - target_encoder_length  : max encoder length
+   - batch_seq              : [batch] valid encoder seq
+   - max_len                : max encoder length
    - hidden                 : should be same btw target and condition, otherwise code should be changed
 
 output : 
@@ -39,7 +40,7 @@ def luong_attention( batch_size, target, condition, batch_seq, max_len, hidden_d
     mask_value = tf.multiply( mask_value, ( 1- mask ) )
     base = mask_value
     
-    norm_dot = tf.nn.softmax( dot + base, dim=-1 )
+    norm_dot = tf.nn.softmax( dot + base, axis=-1 )
    
     # weighted sum by using similarity (normalized)
     target_mul_norm = tf.multiply( batch_seq_embed_target, tf.expand_dims(norm_dot, -1) )
