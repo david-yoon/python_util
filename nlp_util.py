@@ -12,7 +12,7 @@ def apply_mincut_lessequal_than(dic, min_freq):
     print ('apply minCut and re-generate minCutDic')
     
     for key in dic.keys():
-        if dic[key] > min_freq:
+        if dic[key] > int(min_freq):
             mincut_dic[key] = dic[key]
 
     print ('minFreq = ' + str(min_freq))
